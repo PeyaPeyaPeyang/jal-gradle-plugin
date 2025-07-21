@@ -2,6 +2,7 @@ plugins {
     id("java")
     id("java-gradle-plugin")
     id("maven-publish")
+    id("com.gradle.plugin-publish") version "1.2.1"
 }
 
 group = "tokyo.peya"
@@ -26,6 +27,9 @@ dependencies {
 gradlePlugin {
     plugins {
         create("jal") {
+            displayName = "JAL Gradle Plugin"
+            description = "This plugin provides support for JAL (Java Assembly Language) in Gradle projects."
+            tags.set(listOf("jal", "compiler", "java", "jvm", "bytecode", "assembly"))
             id = "tokyo.peya.langjal"
             implementationClass = "tokyo.peya.langjal.gradle.JALPlugin"
         }
@@ -44,4 +48,9 @@ publishing {
             from(components["java"])
         }
     }
+}
+
+gradlePlugin {
+    website = "https://github.com/PeyaPeyaPeyang/jal-gradle-plugin"
+    vcsUrl = "https://github.com/PeyaPeyaPeyang/jal-gradle-plugin"
 }
