@@ -1,10 +1,12 @@
 package tokyo.peya.langjal.gradle;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.logging.Logger;
-import org.gradle.api.tasks.InputDirectory;
-import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.TaskAction;
+import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
 import tokyo.peya.langjal.compiler.CompileSettings;
 import tokyo.peya.langjal.compiler.JALFileCompiler;
@@ -19,49 +21,47 @@ import java.util.stream.Stream;
 
 public class JALCompileTask extends DefaultTask
 {
-    private File inputDir = new File(this.getProject().getLayout().getProjectDirectory().getAsFile(), "src/main/jal");
-    private File outputDir = new File(this.getProject().getLayout().getBuildDirectory().getAsFile().get(), "classes/jal");
+    @Input
+    private final DirectoryProperty inputDir = this.getProject().getObjects().directoryProperty()
+                                                   .convention(this.getProject().getLayout().getProjectDirectory()
+                                                             .dir("src/main/jal")
+                                             );
+    @Input
+    private final DirectoryProperty outputDir = this.getProject().getObjects().directoryProperty()
+                                                    .convention(this.getProject().getLayout().getProjectDirectory()
+                                                             .dir("classes/jal")
+                                             );
+    @Input
+    private final Property<Boolean> computeStackFrameMap = this.getProject().getObjects().property(Boolean.class)
+                                                               .convention(true);
 
-    @InputDirectory
-    public File getInputDir()
-    {
-        return this.inputDir;
-    }
-
-    public void setInputDir(File inputDir)
-    {
-        this.inputDir = inputDir;
-    }
-
-    @OutputDirectory
-    public File getOutputDir()
-    {
-        return this.outputDir;
-    }
-
-    public void setOutputDir(File outputDir)
-    {
-        this.outputDir = outputDir;
-    }
+    @Input
+    private final Property<Boolean> includeLineNumberTable = this.getProject().getObjects().property(Boolean.class)
+                                                               .convention(true);
+    @Input
+    private final Property<Boolean> noDebugInfo = this.getProject().getObjects().property(Boolean.class)
+                                                                 .convention(false);
 
     @TaskAction
     public void compile() throws IOException
     {
-        if (!this.outputDir.exists())
-            if (!this.outputDir.mkdirs())
-                throw new IOException("Failed to create output directory: " + this.outputDir.getAbsolutePath());
+        File outputDirFile = this.outputDir.get().getAsFile();
+        if (!outputDirFile.exists())
+            if (!outputDirFile.mkdirs())
+                throw new IOException("Failed to create output directory: " + outputDirFile.getAbsolutePath());
 
+        File inputDirFile = this.inputDir.get().getAsFile();
         Logger logger = this.getProject().getLogger();
-        logger.info("Compiling JAL files from {} to {}", this.inputDir.getAbsolutePath(), this.outputDir.getAbsolutePath());
+        logger.info("Compiling JAL files from {} to {}", inputDirFile.getAbsolutePath(), inputDirFile.getAbsolutePath());
 
-        this.clearOutputDirectory(logger);
-        this.actualCompile(logger);
+        this.clearOutputDirectory(outputDirFile, logger);
+        this.actualCompile(inputDirFile, outputDirFile, logger);
     }
 
-    private void clearOutputDirectory(@NotNull Logger logger)
+    private void clearOutputDirectory(@NotNull File outputDirFile, @NotNull Logger logger)
     {
         logger.info("Cleaning the output directory..l.");
-        try (Stream<Path> files = Files.walk(this.outputDir.toPath()))
+        try (Stream<Path> files = Files.walk(outputDirFile.toPath()))
         {
 
             files.sorted(Comparator.reverseOrder()) // Sort in reverse order to delete files before directories
@@ -78,20 +78,36 @@ public class JALCompileTask extends DefaultTask
         }
         catch (IOException e)
         {
-            logger.error("Failed to clean output directory: " + this.outputDir.getAbsolutePath(), e);
+            logger.error("Failed to clean output directory: {}", outputDirFile.getAbsolutePath(), e);
         }
     }
 
-    private void actualCompile(@NotNull Logger logger) throws IOException
+    @MagicConstant(valuesFromClass = CompileSettings.class)
+    private int getCompileFlags()
+    {
+        if (this.noDebugInfo.get())
+            return CompileSettings.REQUIRED_ONLY;
+
+        @MagicConstant(valuesFromClass = CompileSettings.class)
+        int flags = CompileSettings.NONE;
+        if (this.computeStackFrameMap.get())
+            flags |= CompileSettings.COMPUTE_STACK_FRAME_MAP;
+        if (this.includeLineNumberTable.get())
+            flags |= CompileSettings.INCLUDE_LINE_NUMBER_TABLE;
+
+        return flags;
+    }
+
+    private void actualCompile(@NotNull File inputDirFile, @NotNull File outputDirFile, @NotNull Logger logger) throws IOException
     {
         GradleCompileReporter reporter = new GradleCompileReporter(logger);
         JALFileCompiler compiler = new JALFileCompiler(
                 reporter,
-                this.outputDir.toPath(),
-                CompileSettings.COMPUTE_STACK_FRAME_MAP
+                outputDirFile.toPath(),
+                this.getCompileFlags()
         );
 
-        try(Stream<Path> files = Files.walk(this.inputDir.toPath()))
+        try(Stream<Path> files = Files.walk(inputDirFile.toPath()))
         {
             files.filter(Files::isRegularFile)
                  .filter(path -> path.toString().endsWith(".jal"))

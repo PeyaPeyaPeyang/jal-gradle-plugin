@@ -82,6 +82,22 @@ or [JAL CLI Compiler](https://github.com/PeyaPeyaPeyang/LangJAL/releases)
 3. Build a project: `./gradlew build` or `./gradlew compileJAL` 
 4. Output classes will be appeared in `build/classes/jal/` and a .jar file will be in `build/libes`
 
+### ⚙ More options
+
+You can configure the JAL plugin in your `build.gradle` file:
+
+```groovy
+langjal {
+    computeStackFrameMap = true // Automatically compute StackMapFrames
+    includeLineNumberTable = true // Include line number table in the output
+    
+    noDebugInfo = false // Disable debug info generation
+    
+    inputDir = layout.projectDirectory.dir('src/main/jal') // Input directory for JAL source files
+    outputDir = layout.buildDirectory.dir('classes/jal') // Output directory for compiled classes
+}
+```
+
 ---
 
 ## 🔌 Javasm IntelliJ Plugin Features

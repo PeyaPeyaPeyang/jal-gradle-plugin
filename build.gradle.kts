@@ -20,7 +20,7 @@ dependencies {
     implementation("org.jetbrains:annotations:26.0.2")
     annotationProcessor("org.jetbrains:annotations:26.0.2")
 
-    implementation("tokyo.peya:langjal:0.0.1")
+    implementation("tokyo.peya:langjal:1.1.1")
     implementation(gradleApi())
 }
 
