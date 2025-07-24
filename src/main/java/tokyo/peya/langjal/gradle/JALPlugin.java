@@ -35,7 +35,7 @@ public class JALPlugin implements Plugin<Project>
         task.dependsOn("compileJAL");
 
         // クラスパスに追加
-        task.getClasspath().plus(project.files(jalCompileTask.getOutputDir()));
+        task.getClasspath().plus(project.files(jalCompileTask.getOutputDir().getAsFile()));
     }
 
     private static void hookJarTask(@NotNull Jar task)
@@ -45,7 +45,7 @@ public class JALPlugin implements Plugin<Project>
         task.dependsOn("compileJAL");
 
         // JARに含めるクラスファイルを設定
-        task.from(jalCompileTask.getOutputDir(), copySpec -> {
+        task.from(jalCompileTask.getOutputDir().getAsFile(), copySpec -> {
             copySpec.include("**/*.class");
         });
     }

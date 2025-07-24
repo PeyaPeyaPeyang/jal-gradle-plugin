@@ -5,6 +5,8 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.logging.Logger;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.NotNull;
@@ -21,26 +23,54 @@ import java.util.stream.Stream;
 
 public class JALCompileTask extends DefaultTask
 {
-    @Input
     private final DirectoryProperty inputDir = this.getProject().getObjects().directoryProperty()
                                                    .convention(this.getProject().getLayout().getProjectDirectory()
                                                              .dir("src/main/jal")
                                              );
-    @Input
+
     private final DirectoryProperty outputDir = this.getProject().getObjects().directoryProperty()
-                                                    .convention(this.getProject().getLayout().getProjectDirectory()
+                                                    .convention(this.getProject().getLayout().getBuildDirectory()
                                                              .dir("classes/jal")
                                              );
-    @Input
+
     private final Property<Boolean> computeStackFrameMap = this.getProject().getObjects().property(Boolean.class)
                                                                .convention(true);
 
-    @Input
+
     private final Property<Boolean> includeLineNumberTable = this.getProject().getObjects().property(Boolean.class)
                                                                .convention(true);
-    @Input
+
     private final Property<Boolean> noDebugInfo = this.getProject().getObjects().property(Boolean.class)
                                                                  .convention(false);
+    @InputDirectory
+    public DirectoryProperty getInputDir()
+    {
+        return this.inputDir;
+    }
+
+    @OutputDirectory
+    public DirectoryProperty getOutputDir()
+    {
+        return this.outputDir;
+    }
+
+    @Input
+    public Property<Boolean> getComputeStackFrameMap()
+    {
+        return this.computeStackFrameMap;
+    }
+
+    @Input
+    public Property<Boolean> getIncludeLineNumberTable()
+    {
+        return this.includeLineNumberTable;
+    }
+
+    @Input
+    public Property<Boolean> getNoDebugInfo()
+    {
+        return this.noDebugInfo;
+    }
 
     @TaskAction
     public void compile() throws IOException
@@ -52,7 +82,7 @@ public class JALCompileTask extends DefaultTask
 
         File inputDirFile = this.inputDir.get().getAsFile();
         Logger logger = this.getProject().getLogger();
-        logger.info("Compiling JAL files from {} to {}", inputDirFile.getAbsolutePath(), inputDirFile.getAbsolutePath());
+        logger.info("Compiling JAL files from {} to {}", inputDirFile.getAbsolutePath(), outputDirFile.getAbsolutePath());
 
         this.clearOutputDirectory(outputDirFile, logger);
         this.actualCompile(inputDirFile, outputDirFile, logger);
