@@ -53,6 +53,6 @@ publishing {
 }
 
 gradlePlugin {
-    website = "https://github.com/PeyaPeyaPeyang/jal-gradle-plugin"
+    website = "https://jal.peya.tokyo/"
     vcsUrl = "https://github.com/PeyaPeyaPeyang/jal-gradle-plugin"
 }
