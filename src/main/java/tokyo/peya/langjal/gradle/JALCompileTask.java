@@ -94,7 +94,10 @@ public class JALCompileTask extends DefaultTask
         try (Stream<Path> files = Files.walk(outputDirFile.toPath()))
         {
 
+            Path root = outputDirFile.toPath();
             files.sorted(Comparator.reverseOrder()) // Sort in reverse order to delete files before directories
+                 // Keep the output directory itself. We only want to remove its contents.
+                 .filter(path -> !path.equals(root))
                  .forEach(path -> {
                      try
                      {
