@@ -2,7 +2,7 @@
   <h1>JAL</h1>
 </div>
 
-**JAL (Java Assembly Language)**  is a custom-designed assembly language for the Java Virtual Machine.  
+**JAL (JVM Assembly Language)**  is a custom-designed assembly language for the Java Virtual Machine.  
 It makes exploring the internals of the JVM not just possible, but genuinely fun.
 
 ---

@@ -20,7 +20,7 @@ dependencies {
     implementation("org.jetbrains:annotations:26.0.2")
     annotationProcessor("org.jetbrains:annotations:26.0.2")
 
-    implementation("tokyo.peya:langjal:1.1.1")
+    implementation("tokyo.peya:langjal:1.2.7")
     implementation(gradleApi())
 }
 
@@ -28,7 +28,7 @@ gradlePlugin {
     plugins {
         create("jal") {
             displayName = "JAL Gradle Plugin"
-            description = "This plugin provides support for JAL (Java Assembly Language) in Gradle projects."
+            description = "This plugin provides support for JAL (JVM Assembly Language) in Gradle projects."
             tags.set(listOf("jal", "compiler", "java", "jvm", "bytecode", "assembly"))
             id = "tokyo.peya.langjal"
             implementationClass = "tokyo.peya.langjal.gradle.JALPlugin"
